@@ -1,14 +1,23 @@
-# Use Maven to build the application
+# ---------- BUILD STAGE ----------
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
+
 COPY pom.xml .
+RUN mvn -B -q -e -DskipTests dependency:go-offline
+
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn -B -q clean package -DskipTests
 
-# Use JRE for the final image
+
+# ---------- RUNTIME STAGE ----------
 FROM eclipse-temurin:21-jre
-WORKDIR /app
-COPY --from=build /app/target/demo-0.0.1-SNAPSHOT.jar app.jar
 
-# Command will be overridden by run.sh or docker run arguments
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+RUN useradd -ms /bin/bash appuser
+USER appuser
+
+# Important: keep container interactive-friendly
 ENTRYPOINT ["java", "-jar", "app.jar"]
