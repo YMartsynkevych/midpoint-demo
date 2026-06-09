@@ -43,6 +43,11 @@ public class MidPointClient {
                 .build();
     }
 
+    public void logout() {
+        logger.info("Closing MidPoint client and clearing credentials...");
+        this.webClient = null;
+    }
+
     public boolean testAuthentication() {
         if (this.webClient == null) {
             return false;

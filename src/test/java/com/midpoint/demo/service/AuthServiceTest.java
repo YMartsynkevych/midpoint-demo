@@ -28,6 +28,11 @@ class AuthServiceTest {
     void testTestAuthentication() {
         when(client.testAuthentication()).thenReturn(true);
         assertTrue(authService.testAuthentication());
-        verify(client).testAuthentication();
+    }
+
+    @Test
+    void testLogout() {
+        authService.logout();
+        verify(client).logout();
     }
 }

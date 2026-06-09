@@ -69,4 +69,10 @@ class LoginManagerTest {
         assertFalse(result);
         verify(authService, times(3)).authenticate(anyString(), anyString());
     }
+
+    @Test
+    void testLogout() {
+        loginManager.logout();
+        verify(authService).logout();
+    }
 }

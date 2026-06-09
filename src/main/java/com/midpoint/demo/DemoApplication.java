@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
+import reactor.netty.http.HttpResources;
 
 import java.util.Scanner;
 
@@ -57,7 +58,7 @@ public class DemoApplication implements CommandLineRunner, ExitCodeGenerator {
 			String line = scanner.nextLine();
 
 			if (isExitCommand(line)) {
-				System.out.println("Bye!");
+				shutdown();
 				break;
 			}
 
@@ -70,6 +71,17 @@ public class DemoApplication implements CommandLineRunner, ExitCodeGenerator {
 
 	private boolean isExitCommand(String line) {
 		return line == null || line.trim().equalsIgnoreCase(EXIT_COMMAND);
+	}
+
+	private void shutdown() {
+		System.out.println("Shutting down application...");
+		loginManager.logout();
+
+		HttpResources.disposeLoopsAndConnections();
+
+		System.out.println("Bye!");
+		System.exit(0);
+
 	}
 
 	@Override
