@@ -1,6 +1,7 @@
 package com.midpoint.demo.service;
 
 import com.midpoint.demo.client.MidPointClient;
+import com.midpoint.demo.exception.MidPointNotFoundException;
 import com.midpoint.demo.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UserService {
+
+    private static final String ATTRIBUTE_EMAIL = "emailAddress";
+    private static final String ATTRIBUTE_GIVEN_NAME = "givenName";
+    private static final String ATTRIBUTE_FAMILY_NAME = "familyName";
+    private static final String ATTRIBUTE_NAME = "name";
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final MidPointClient client;
@@ -44,19 +50,21 @@ public class UserService {
     }
 
     private String resolveOid(String username) {
-        if (usernameToOid.containsKey(username)) {
-            logger.debug("Resolved OID for username {} from cache: {}", username, usernameToOid.get(username));
-            return usernameToOid.get(username);
+        String cachedOid = usernameToOid.get(username);
+        if (cachedOid != null) {
+            logger.debug("Resolved OID for username {} from cache: {}", username, cachedOid);
+            return cachedOid;
         }
 
         logger.debug("Username {} not found in cache, searching MidPoint...", username);
         List<User> users = searchByUsername(username);
         if (users == null || users.isEmpty()) {
-            throw new RuntimeException("User not found: " + username);
+            throw new MidPointNotFoundException("User not found: " + username);
         }
 
         User user = users.get(0);
         logger.debug("Resolved OID for username {} after search: {}", username, user.getOid());
+        usernameToOid.put(username, user.getOid());
         return user.getOid();
     }
 
@@ -73,10 +81,10 @@ public class UserService {
 
     public void updateUser(String oid, String email, String givenName, String familyName, String newUsername) {
         Map<String, Object> updates = new HashMap<>();
-        if (email != null) updates.put("emailAddress", email);
-        if (givenName != null) updates.put("givenName", givenName);
-        if (familyName != null) updates.put("familyName", familyName);
-        if (newUsername != null) updates.put("name", newUsername);
+        if (email != null) updates.put(ATTRIBUTE_EMAIL, email);
+        if (givenName != null) updates.put(ATTRIBUTE_GIVEN_NAME, givenName);
+        if (familyName != null) updates.put(ATTRIBUTE_FAMILY_NAME, familyName);
+        if (newUsername != null) updates.put(ATTRIBUTE_NAME, newUsername);
 
         if (updates.isEmpty()) {
             throw new IllegalArgumentException("No fields provided for update");

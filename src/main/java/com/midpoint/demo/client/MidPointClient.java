@@ -1,5 +1,7 @@
 package com.midpoint.demo.client;
 
+import com.midpoint.demo.exception.MidPointAuthenticationException;
+import com.midpoint.demo.exception.MidPointException;
 import com.midpoint.demo.model.MidpointResponse;
 import com.midpoint.demo.model.ObjectModification;
 import com.midpoint.demo.model.SearchQuery;
@@ -7,15 +9,21 @@ import com.midpoint.demo.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class MidPointClient {
+
+    private static final String USERS_SEARCH_ENDPOINT = "/users/search";
+    private static final String USERS_SEARCH_JSON_ENDPOINT = "/users/search?format=json";
+    private static final String USER_OID_ENDPOINT = "/users/{oid}";
 
     private static final Logger logger = LoggerFactory.getLogger(MidPointClient.class);
     private final WebClient.Builder webClientBuilder;
@@ -39,69 +47,84 @@ public class MidPointClient {
         if (this.webClient == null) {
             return false;
         }
-        webClient.post()
-                .uri("/users/search")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(SearchQuery.byUsername(null))
-                .retrieve()
-                .toBodilessEntity()
-                .block();
-        return true;
+        try {
+            webClient.post()
+                    .uri(USERS_SEARCH_ENDPOINT)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .bodyValue(SearchQuery.byUsername(null))
+                    .retrieve()
+                    .onStatus(status -> status.equals(HttpStatus.UNAUTHORIZED),
+                            response -> Mono.error(new MidPointAuthenticationException("Invalid credentials")))
+                    .toBodilessEntity()
+                    .block();
+            return true;
+        } catch (MidPointAuthenticationException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Authentication test failed: {}", e.getMessage());
+            throw new MidPointException("Failed to connect to MidPoint: " + e.getMessage(), e);
+        }
     }
 
     public List<User> searchUsers(String username) {
-
+        ensureAuthenticated();
         logger.debug("Searching for user: {}", username);
 
-        MidpointResponse response = webClient.post()
-                .uri("/users/search?format=json")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(SearchQuery.byUsername(username))
-                .retrieve()
-                .bodyToMono(MidpointResponse.class)
-                .block();
+        try {
+            MidpointResponse response = webClient.post()
+                    .uri(USERS_SEARCH_JSON_ENDPOINT)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .bodyValue(SearchQuery.byUsername(username))
+                    .retrieve()
+                    .onStatus(status -> status.equals(HttpStatus.UNAUTHORIZED),
+                            res -> Mono.error(new MidPointAuthenticationException("Unauthorized access")))
+                    .bodyToMono(MidpointResponse.class)
+                    .block();
 
-        if (response == null) {
-            throw new IllegalStateException("Response from Midpoint is null");
+            if (response == null || response.getObject() == null) {
+                return List.of();
+            }
+            return response.getObject().getObject();
+        } catch (MidPointAuthenticationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MidPointException("Error during user search: " + e.getMessage(), e);
         }
-        return response.getObject().getObject();
-    }
-
-    public void updateUserEmail(String oid, String email) {
-        logger.debug("Updating user {} email to {}", oid, email);
-
-        Map<String, Object> body = Map.of(
-                "objectModification", ObjectModification.replace("emailAddress", email)
-        );
-
-        webClient.patch()
-                .uri("/users/{oid}", oid)
-                .headers(h -> {
-                    h.setContentType(MediaType.APPLICATION_JSON);
-                    h.setAccept(List.of(MediaType.APPLICATION_JSON));
-                })
-                .bodyValue(body)
-                .retrieve()
-                .toBodilessEntity()
-                .block();
     }
 
     public void updateUser(String oid, Map<String, Object> updates) {
+        ensureAuthenticated();
         logger.debug("Updating user {} with fields: {}", oid, updates);
 
         Map<String, Object> body = Map.of(
                 "objectModification", ObjectModification.replace(updates)
         );
 
-        webClient.patch()
-                .uri("/users/{oid}", oid)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(body)
-                .retrieve()
-                .toBodilessEntity()
-                .block();
+        try {
+            webClient.patch()
+                    .uri(USER_OID_ENDPOINT, oid)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .bodyValue(body)
+                    .retrieve()
+                    .onStatus(status -> status.equals(HttpStatus.UNAUTHORIZED),
+                            res -> Mono.error(new MidPointAuthenticationException("Unauthorized access")))
+                    .onStatus(status -> status.equals(HttpStatus.NOT_FOUND),
+                            res -> Mono.error(new MidPointException("User with OID " + oid + " not found")))
+                    .toBodilessEntity()
+                    .block();
+        } catch (MidPointException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MidPointException("Error updating user: " + e.getMessage(), e);
+        }
+    }
+
+    private void ensureAuthenticated() {
+        if (this.webClient == null) {
+            throw new MidPointAuthenticationException("Client not authenticated. Please login first.");
+        }
     }
 }

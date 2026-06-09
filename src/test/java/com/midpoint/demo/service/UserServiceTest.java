@@ -1,13 +1,12 @@
 package com.midpoint.demo.service;
 
 import com.midpoint.demo.client.MidPointClient;
+import com.midpoint.demo.exception.MidPointNotFoundException;
 import com.midpoint.demo.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -50,7 +49,7 @@ class UserServiceTest {
     void testUpdateUserByUsername_UserNotFound() {
         when(client.searchUsers(anyString())).thenReturn(List.of());
 
-        assertThrows(RuntimeException.class, () -> 
+        assertThrows(MidPointNotFoundException.class, () -> 
             userService.updateUserByUsername("nonexistent", "email", null, null, null)
         );
     }

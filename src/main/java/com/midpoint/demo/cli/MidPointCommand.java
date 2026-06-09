@@ -39,6 +39,11 @@ public class MidPointCommand implements Callable<Integer> {
     @Component
     @Command(name = "search", description = "Search users by username")
     public static class SearchCommand implements Callable<Integer> {
+        private static final int COL_WIDTH_DEFAULT = 15;
+        private static final int COL_WIDTH_EMAIL = 20;
+        private static final String TABLE_FORMAT = "%-15s | %-15s | %-15s | %-15s | %-20s%n";
+        private static final String TABLE_SEPARATOR = "----------------------------------------------------------------------------------------------------";
+
         @CommandLine.ParentCommand
         private MidPointCommand parent;
 
@@ -59,19 +64,33 @@ public class MidPointCommand implements Callable<Integer> {
                     System.out.println("No users found for username: " + username);
                 } else {
                     System.out.println("Found " + users.size() + " user(s):");
-                    System.out.println("--------------------------------------------------");
-                    System.out.printf("%-15s | %-15s | %-15s | %-15s | %-20s%n", "OID", "Name", "Given Name", "Family Name", "Email");
-                    System.out.println("--------------------------------------------------");
-                    for (User user : users) {
-                        System.out.printf("%-15s | %-15s | %-15s | %-15s | %-20s%n",
-                                user.getOid(), user.getName(), user.getGivenName(), user.getFamilyName(), user.getEmailAddress());
-                    }
+                    renderTable(users);
                 }
                 return 0;
             } catch (Exception e) {
                 System.err.println("Error searching users: " + e.getMessage());
                 return 1;
             }
+        }
+
+        private void renderTable(List<User> users) {
+            System.out.println(TABLE_SEPARATOR);
+            System.out.printf(TABLE_FORMAT, "OID", "Name", "Given Name", "Family Name", "Email");
+            System.out.println(TABLE_SEPARATOR);
+            for (User user : users) {
+                System.out.printf(TABLE_FORMAT,
+                        truncate(user.getOid(), COL_WIDTH_DEFAULT),
+                        truncate(user.getName(), COL_WIDTH_DEFAULT),
+                        truncate(user.getGivenName(), COL_WIDTH_DEFAULT),
+                        truncate(user.getFamilyName(), COL_WIDTH_DEFAULT),
+                        truncate(user.getEmailAddress(), COL_WIDTH_EMAIL));
+            }
+            System.out.println(TABLE_SEPARATOR);
+        }
+
+        private String truncate(String value, int length) {
+            if (value == null) return "";
+            return value.length() <= length ? value : value.substring(0, length - 3) + "...";
         }
     }
 
