@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: demo
+
+midpoint:
+  base-url: https://demo.evolveum.com/midpoint/ws/rest
