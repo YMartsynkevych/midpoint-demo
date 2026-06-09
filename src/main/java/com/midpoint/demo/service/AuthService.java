@@ -19,4 +19,8 @@ public class AuthService {
     public boolean testAuthentication() {
         return client.testAuthentication();
     }
+
+    public void logout() {
+        client.logout();
+    }
 }

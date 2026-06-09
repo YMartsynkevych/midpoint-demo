@@ -66,5 +66,10 @@ public class LoginManager {
         return false;
     }
 
+    public void logout() {
+        System.out.println("Logging out...");
+        authService.logout();
+    }
+
     public record Credentials(String username, String password) {}
 }

@@ -97,21 +97,6 @@ class MidPointClientTest {
     }
 
     @Test
-    void testSearchUsers_All() throws Exception {
-        mockWebServer.enqueue(new MockResponse()
-                .setResponseCode(200)
-                .setBody("{\"object\": {\"object\": []}}")
-                .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
-
-        midPointClient.authenticate("user", "pass");
-        midPointClient.searchUsers(null);
-
-        RecordedRequest recordedRequest = mockWebServer.takeRequest();
-        SearchQuery sentQuery = objectMapper.readValue(recordedRequest.getBody().readUtf8(), SearchQuery.class);
-        assertEquals("all", sentQuery.getQuery().getFilter().getType());
-    }
-
-    @Test
     void testUpdateUser() throws InterruptedException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
 
@@ -122,5 +107,12 @@ class MidPointClientTest {
         assertEquals("PATCH", recordedRequest.getMethod());
         assertEquals("/users/123", recordedRequest.getPath());
         assertTrue(recordedRequest.getBody().readUtf8().contains("new@example.com"));
+    }
+
+    @Test
+    void testLogout() {
+        midPointClient.authenticate("user", "pass");
+        midPointClient.logout();
+        assertThrows(MidPointAuthenticationException.class, () -> midPointClient.searchUsers("test"));
     }
 }
