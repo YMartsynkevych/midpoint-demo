@@ -18,16 +18,36 @@ import java.util.Map;
 public class MidPointClient {
 
     private static final Logger logger = LoggerFactory.getLogger(MidPointClient.class);
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
+    private final String baseUrl;
+    private WebClient webClient;
 
     public MidPointClient(WebClient.Builder webClientBuilder,
-                          @Value("${midpoint.base-url}") String baseUrl,
-                          @Value("${MIDPOINT_USER:administrator}") String username,
-                          @Value("${MIDPOINT_PASS:IGA4ever}") String password) {
+                          @Value("${midpoint.base-url}") String baseUrl) {
+        this.webClientBuilder = webClientBuilder;
+        this.baseUrl = baseUrl;
+    }
+
+    public void authenticate(String username, String password) {
         this.webClient = webClientBuilder
                 .baseUrl(baseUrl)
                 .defaultHeaders(h -> h.setBasicAuth(username, password))
                 .build();
+    }
+
+    public boolean testAuthentication() {
+        if (this.webClient == null) {
+            return false;
+        }
+        webClient.post()
+                .uri("/users/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(SearchQuery.byUsername(null))
+                .retrieve()
+                .toBodilessEntity()
+                .block();
+        return true;
     }
 
     public List<User> searchUsers(String username) {

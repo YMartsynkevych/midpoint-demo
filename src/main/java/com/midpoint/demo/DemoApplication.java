@@ -36,13 +36,53 @@ public class DemoApplication implements CommandLineRunner, ExitCodeGenerator {
 
 		// interactive mode
 		try (var scanner = new java.util.Scanner(System.in)) {
+			// LOGIN PHASE
+			boolean authenticated = false;
+			for (int attempt = 1; attempt <= 3; attempt++) {
+				System.out.print("Username: ");
+				String username = scanner.nextLine();
+				System.out.print("Password: ");
+				// Use System.console() for sensitive input if available, otherwise fallback to scanner
+				String password;
+				if (System.console() != null) {
+					char[] passwordChars = System.console().readPassword();
+					password = new String(passwordChars);
+				} else {
+					password = scanner.nextLine();
+				}
+
+				midPointCommand.getMidPointClient().authenticate(username, password);
+				try {
+					if (midPointCommand.getMidPointClient().testAuthentication()) {
+						System.out.println("Login successful");
+						authenticated = true;
+						break;
+					} else {
+						System.out.println("Invalid credentials");
+					}
+				} catch (Exception e) {
+					System.out.println("Invalid credentials");
+				}
+			}
+
+			if (!authenticated) {
+				System.out.println("Too many failed attempts. Terminating.");
+				exitCode = 1;
+				return;
+			}
+
+			// COMMAND MODE
 			while (true) {
 				System.out.print("midpoint> ");
+				if (!scanner.hasNextLine()) break;
 				String line = scanner.nextLine();
 
 				if (line == null || line.trim().equalsIgnoreCase("exit")) {
+					System.out.println("Bye!");
 					break;
 				}
+
+				if (line.trim().isEmpty()) continue;
 
 				String[] inputArgs = line.trim().split("\\s+");
 				cmd.execute(inputArgs);
