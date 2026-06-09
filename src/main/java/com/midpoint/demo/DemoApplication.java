@@ -29,20 +29,16 @@ public class DemoApplication implements CommandLineRunner, ExitCodeGenerator {
 		CommandLine cmd = new CommandLine(midPointCommand, factory);
 
 		if (args.length > 0) {
-			// single command mode
 			exitCode = cmd.execute(args);
 			return;
 		}
 
-		// interactive mode
 		try (var scanner = new java.util.Scanner(System.in)) {
-			// LOGIN PHASE
 			boolean authenticated = false;
 			for (int attempt = 1; attempt <= 3; attempt++) {
 				System.out.print("Username: ");
 				String username = scanner.nextLine();
 				System.out.print("Password: ");
-				// Use System.console() for sensitive input if available, otherwise fallback to scanner
 				String password;
 				if (System.console() != null) {
 					char[] passwordChars = System.console().readPassword();
@@ -71,7 +67,6 @@ public class DemoApplication implements CommandLineRunner, ExitCodeGenerator {
 				return;
 			}
 
-			// COMMAND MODE
 			while (true) {
 				System.out.print("midpoint> ");
 				if (!scanner.hasNextLine()) break;
