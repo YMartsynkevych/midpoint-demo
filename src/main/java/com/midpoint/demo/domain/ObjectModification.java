@@ -1,4 +1,4 @@
-package com.midpoint.demo.model;
+package com.midpoint.demo.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

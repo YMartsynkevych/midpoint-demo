@@ -1,6 +1,6 @@
 package com.midpoint.demo;
 
-import com.midpoint.demo.cli.MidPointCommand;
+import com.midpoint.demo.cli.client.commands.base.MidPointCommand;
 import com.midpoint.demo.security.LoginManager;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;

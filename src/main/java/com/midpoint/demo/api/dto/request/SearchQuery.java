@@ -1,4 +1,4 @@
-package com.midpoint.demo.model;
+package com.midpoint.demo.api.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,5 +40,4 @@ public class SearchQuery {
         }
         return builder.build();
     }
-
 }

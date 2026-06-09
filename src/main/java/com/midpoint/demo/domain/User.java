@@ -1,4 +1,4 @@
-package com.midpoint.demo.model;
+package com.midpoint.demo.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;

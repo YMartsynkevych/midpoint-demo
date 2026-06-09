@@ -1,9 +1,9 @@
 package com.midpoint.demo.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.midpoint.demo.api.dto.request.SearchQuery;
+import com.midpoint.demo.cli.client.MidPointClient;
 import com.midpoint.demo.exception.MidPointAuthenticationException;
-import com.midpoint.demo.exception.MidPointException;
-import com.midpoint.demo.model.SearchQuery;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -94,6 +94,21 @@ class MidPointClientTest {
         SearchQuery sentQuery = objectMapper.readValue(recordedRequest.getBody().readUtf8(), SearchQuery.class);
         assertNotNull(sentQuery.getQuery().getFilter().getText());
         assertTrue(sentQuery.getQuery().getFilter().getText().contains("testuser"));
+    }
+
+    @Test
+    void testSearchUsers_All() throws Exception {
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setBody("{\"object\": {\"object\": []}}")
+                .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
+
+        midPointClient.authenticate("user", "pass");
+        midPointClient.searchUsers(null);
+
+        RecordedRequest recordedRequest = mockWebServer.takeRequest();
+        SearchQuery sentQuery = objectMapper.readValue(recordedRequest.getBody().readUtf8(), SearchQuery.class);
+        assertEquals("all", sentQuery.getQuery().getFilter().getType());
     }
 
     @Test

@@ -1,7 +1,9 @@
 package com.midpoint.demo.cli;
 
+import com.midpoint.demo.cli.client.commands.SearchCommand;
+import com.midpoint.demo.cli.client.commands.UpdateCommand;
+import com.midpoint.demo.cli.client.commands.base.MidPointCommand;
 import com.midpoint.demo.service.UserService;
-import com.midpoint.demo.client.MidPointClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
@@ -16,7 +18,6 @@ import static org.mockito.Mockito.*;
 class MidPointCommandTest {
 
     private UserService userService;
-    private MidPointClient midPointClient;
     private MidPointCommand midPointCommand;
     private CommandLine cmd;
     private StringWriter sw;
@@ -24,17 +25,16 @@ class MidPointCommandTest {
     @BeforeEach
     void setUp() {
         userService = mock(UserService.class);
-        midPointClient = mock(MidPointClient.class);
-        midPointCommand = new MidPointCommand(midPointClient);
+        midPointCommand = new MidPointCommand();
 
         CommandLine.IFactory factory = new CommandLine.IFactory() {
             @Override
             public <K> K create(Class<K> cls) throws Exception {
-                if (cls == MidPointCommand.SearchCommand.class) {
-                    return (K) new MidPointCommand.SearchCommand(userService);
+                if (cls == SearchCommand.class) {
+                    return (K) new SearchCommand(userService);
                 }
-                if (cls == MidPointCommand.UpdateCommand.class) {
-                    return (K) new MidPointCommand.UpdateCommand(userService);
+                if (cls == UpdateCommand.class) {
+                    return (K) new UpdateCommand(userService);
                 }
                 return CommandLine.defaultFactory().create(cls);
             }
@@ -47,17 +47,29 @@ class MidPointCommandTest {
     }
 
     @Test
-    void testSearchCommandParsing() {
-        int exitCode = cmd.execute("search", "--username", "testuser");
+    void testSearchCommandParsingWithUsername() {
+        int exitCode = cmd.execute("search", "testuser");
         assertEquals(0, exitCode);
         verify(userService).searchByUsername("testuser");
     }
 
     @Test
-    void testUpdateCommandParsing() {
-        int exitCode = cmd.execute("update", "--username", "testuser", "--email", "new@example.com");
+    void testSearchCommandParsingNoUsername() {
+        int exitCode = cmd.execute("search");
         assertEquals(0, exitCode);
-        verify(userService).updateUserByUsername(eq("testuser"), eq("new@example.com"), any(), any(), any());
+        verify(userService).searchByUsername(null);
+    }
+
+    @Test
+    void testUpdateCommandParsingWithAllOptions() {
+        int exitCode = cmd.execute("update",
+                "--username", "testuser",
+                "--email", "new@email.com",
+                "--givenName", "John",
+                "--familyName", "Doe",
+                "--newName", "jdoe");
+        assertEquals(0, exitCode);
+        verify(userService).updateUserByUsername("testuser", "new@email.com", "John", "Doe", "jdoe");
     }
 
     @Test

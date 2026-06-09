@@ -1,8 +1,8 @@
 package com.midpoint.demo.service;
 
-import com.midpoint.demo.client.MidPointClient;
+import com.midpoint.demo.cli.client.MidPointClient;
+import com.midpoint.demo.domain.User;
 import com.midpoint.demo.exception.MidPointNotFoundException;
-import com.midpoint.demo.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

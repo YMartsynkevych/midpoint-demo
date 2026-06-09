@@ -1,5 +1,6 @@
-package com.midpoint.demo.model;
+package com.midpoint.demo.api.dto.response;
 
+import com.midpoint.demo.domain.User;
 import lombok.Data;
 
 import java.util.List;

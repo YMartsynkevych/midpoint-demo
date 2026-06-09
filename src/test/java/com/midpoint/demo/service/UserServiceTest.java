@@ -1,12 +1,13 @@
 package com.midpoint.demo.service;
 
-import com.midpoint.demo.client.MidPointClient;
+import com.midpoint.demo.cli.client.MidPointClient;
+import com.midpoint.demo.domain.User;
 import com.midpoint.demo.exception.MidPointNotFoundException;
-import com.midpoint.demo.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -36,13 +37,19 @@ class UserServiceTest {
     }
 
     @Test
-    void testUpdateUserByUsername_UserExistsInCache() {
+    void testUpdateUserByUsername_WithAllFields() {
         User user = User.builder().oid("oid123").name("user1").build();
         when(client.searchUsers("user1")).thenReturn(List.of(user));
-        
-        userService.updateUserByUsername("user1", "new@email.com", null, null, null);
 
-        verify(client).updateUser(eq("oid123"), anyMap());
+        userService.updateUserByUsername("user1", "new@email.com", "John", "Doe", "jdoe");
+
+        Map<String, Object> expectedUpdates = Map.of(
+                "emailAddress", "new@email.com",
+                "givenName", "John",
+                "familyName", "Doe",
+                "name", "jdoe"
+        );
+        verify(client).updateUser("oid123", expectedUpdates);
     }
 
     @Test

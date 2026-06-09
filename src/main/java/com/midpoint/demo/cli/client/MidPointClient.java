@@ -1,11 +1,11 @@
-package com.midpoint.demo.client;
+package com.midpoint.demo.cli.client;
 
+import com.midpoint.demo.api.dto.response.MidpointResponse;
+import com.midpoint.demo.domain.ObjectModification;
+import com.midpoint.demo.api.dto.request.SearchQuery;
+import com.midpoint.demo.domain.User;
 import com.midpoint.demo.exception.MidPointAuthenticationException;
 import com.midpoint.demo.exception.MidPointException;
-import com.midpoint.demo.model.MidpointResponse;
-import com.midpoint.demo.model.ObjectModification;
-import com.midpoint.demo.model.SearchQuery;
-import com.midpoint.demo.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

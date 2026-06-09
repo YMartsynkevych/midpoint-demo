@@ -1,8 +1,8 @@
 package com.midpoint.demo.security;
 
-import com.midpoint.demo.cli.MidPointCommand;
 import com.midpoint.demo.exception.MidPointAuthenticationException;
 import com.midpoint.demo.exception.MidPointException;
+import com.midpoint.demo.service.AuthService;
 import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
@@ -12,10 +12,10 @@ public class LoginManager {
 
     private static final int MAX_LOGIN_ATTEMPTS = 3;
 
-    private final MidPointCommand midPointCommand;
+    private final AuthService authService;
 
-    public LoginManager(MidPointCommand midPointCommand) {
-        this.midPointCommand = midPointCommand;
+    public LoginManager(AuthService authService) {
+        this.authService = authService;
     }
 
     public boolean login(Scanner scanner) {
@@ -51,9 +51,8 @@ public class LoginManager {
 
     private boolean authenticate(Credentials credentials) {
         try {
-            var client = midPointCommand.getMidPointClient();
-            client.authenticate(credentials.username(), credentials.password());
-            if (client.testAuthentication()) {
+            authService.authenticate(credentials.username(), credentials.password());
+            if (authService.testAuthentication()) {
                 return true;
             }
             System.out.println("Invalid credentials");
