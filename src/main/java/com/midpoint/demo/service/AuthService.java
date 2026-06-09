@@ -12,12 +12,8 @@ public class AuthService {
         this.client = client;
     }
 
-    public void authenticate(String username, String password) {
-        client.authenticate(username, password);
-    }
-
-    public boolean testAuthentication() {
-        return client.testAuthentication();
+    public boolean authenticate(String username, String password) {
+        return client.authenticate(username, password);
     }
 
     public void logout() {

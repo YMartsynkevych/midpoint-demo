@@ -51,8 +51,7 @@ public class LoginManager {
 
     private boolean authenticate(Credentials credentials) {
         try {
-            authService.authenticate(credentials.username(), credentials.password());
-            if (authService.testAuthentication()) {
+            if (authService.authenticate(credentials.username(), credentials.password())) {
                 return true;
             }
             System.out.println("Invalid credentials");

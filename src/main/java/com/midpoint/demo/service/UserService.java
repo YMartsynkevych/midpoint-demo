@@ -28,23 +28,6 @@ public class UserService {
         this.client = client;
     }
 
-    public void initCache() {
-        logger.info("Initializing user OID cache...");
-        try {
-            List<User> users = client.searchUsers(null);
-            if (users != null) {
-                users.forEach(user -> {
-                    if (user.getName() != null && user.getOid() != null) {
-                        usernameToOid.put(user.getName(), user.getOid());
-                    }
-                });
-                logger.info("Loaded {} users into cache", usernameToOid.size());
-            }
-        } catch (Exception e) {
-            logger.error("Failed to initialize user cache: {}", e.getMessage());
-        }
-    }
-
     public List<User> searchByUsername(String username) {
         return client.searchUsers(username);
     }

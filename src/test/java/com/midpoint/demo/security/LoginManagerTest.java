@@ -24,7 +24,7 @@ class LoginManagerTest {
     @Test
     void testLoginSuccess() {
         Scanner scanner = new Scanner("user\npass\n");
-        when(authService.testAuthentication()).thenReturn(true);
+        when(authService.authenticate("user", "pass")).thenReturn(true);
 
         boolean result = loginManager.login(scanner);
 
@@ -36,7 +36,7 @@ class LoginManagerTest {
     void testLoginRetrySuccess() {
         Scanner scanner = new Scanner("user\nwrong\nuser\npass\n");
         
-        when(authService.testAuthentication())
+        when(authService.authenticate(anyString(), anyString()))
                 .thenReturn(false)
                 .thenReturn(true);
 
@@ -50,7 +50,7 @@ class LoginManagerTest {
     void testLoginFailureMaxAttempts() {
         Scanner scanner = new Scanner("user\nwrong\nuser\nwrong\nuser\nwrong\n");
         
-        when(authService.testAuthentication()).thenReturn(false);
+        when(authService.authenticate(anyString(), anyString())).thenReturn(false);
 
         boolean result = loginManager.login(scanner);
 
