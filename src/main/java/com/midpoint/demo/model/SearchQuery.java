@@ -26,6 +26,7 @@ public class SearchQuery {
     @AllArgsConstructor
     public static class Filter {
         private String text;
+        private Object type;
     }
 
     public static SearchQuery byUsername(String username) {
@@ -39,4 +40,5 @@ public class SearchQuery {
         }
         return builder.build();
     }
+
 }

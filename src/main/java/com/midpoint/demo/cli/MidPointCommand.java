@@ -2,6 +2,7 @@ package com.midpoint.demo.cli;
 
 import com.midpoint.demo.model.User;
 import com.midpoint.demo.service.UserService;
+import com.midpoint.demo.client.MidPointClient;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -19,6 +20,16 @@ import java.util.concurrent.Callable;
         })
 public class MidPointCommand implements Callable<Integer> {
 
+    private final MidPointClient midPointClient;
+
+    public MidPointCommand(MidPointClient midPointClient) {
+        this.midPointClient = midPointClient;
+    }
+
+    public MidPointClient getMidPointClient() {
+        return midPointClient;
+    }
+
     @Override
     public Integer call() {
         CommandLine.usage(this, System.out);
@@ -33,7 +44,7 @@ public class MidPointCommand implements Callable<Integer> {
 
         private final UserService userService;
 
-        @Option(names = {"--username"}, required = true, description = "Username to search for")
+        @Option(names = {"--username"}, description = "Username to search for")
         private String username;
 
         public SearchCommand(UserService userService) {

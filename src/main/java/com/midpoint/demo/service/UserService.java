@@ -2,7 +2,6 @@ package com.midpoint.demo.service;
 
 import com.midpoint.demo.client.MidPointClient;
 import com.midpoint.demo.model.User;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,8 +21,7 @@ public class UserService {
     public UserService(MidPointClient client) {
         this.client = client;
     }
-    
-    @PostConstruct
+
     public void initCache() {
         logger.info("Initializing user OID cache...");
         try {
