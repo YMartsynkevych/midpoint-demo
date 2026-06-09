@@ -55,7 +55,7 @@ public class MidPointClient {
         logger.debug("Searching for user: {}", username);
 
         MidpointResponse response = webClient.post()
-                .uri("/users/search?format=json") // important if needed
+                .uri("/users/search?format=json")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(SearchQuery.byUsername(username))

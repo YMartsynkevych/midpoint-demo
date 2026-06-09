@@ -55,7 +55,6 @@ public class UserService {
             throw new RuntimeException("User not found: " + username);
         }
 
-        // MidPoint 'name' is the username
         User user = users.get(0);
         logger.debug("Resolved OID for username {} after search: {}", username, user.getOid());
         return user.getOid();
