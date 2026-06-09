@@ -1,6 +1,8 @@
 package com.midpoint.demo.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.midpoint.demo.exception.MidPointAuthenticationException;
+import com.midpoint.demo.exception.MidPointException;
 import com.midpoint.demo.model.SearchQuery;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -63,7 +65,12 @@ class MidPointClientTest {
 
         midPointClient.authenticate("user", "wrong-pass");
         
-        assertThrows(Exception.class, () -> midPointClient.testAuthentication());
+        assertThrows(MidPointAuthenticationException.class, () -> midPointClient.testAuthentication());
+    }
+
+    @Test
+    void testSearchUsers_NotAuthenticated() {
+        assertThrows(MidPointAuthenticationException.class, () -> midPointClient.searchUsers("test"));
     }
 
     @Test

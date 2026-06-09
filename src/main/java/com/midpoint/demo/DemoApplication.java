@@ -1,6 +1,7 @@
 package com.midpoint.demo;
 
 import com.midpoint.demo.cli.MidPointCommand;
+import com.midpoint.demo.security.LoginManager;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
@@ -8,16 +9,23 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 
+import java.util.Scanner;
+
 @SpringBootApplication
 public class DemoApplication implements CommandLineRunner, ExitCodeGenerator {
 
+	private static final String PROMPT = "midpoint> ";
+	private static final String EXIT_COMMAND = "exit";
+
 	private final IFactory factory;
 	private final MidPointCommand midPointCommand;
+	private final LoginManager loginManager;
 	private int exitCode;
 
-	public DemoApplication(IFactory factory, MidPointCommand midPointCommand) {
+	public DemoApplication(IFactory factory, MidPointCommand midPointCommand, LoginManager loginManager) {
 		this.factory = factory;
 		this.midPointCommand = midPointCommand;
+		this.loginManager = loginManager;
 	}
 
 	public static void main(String[] args) {
@@ -33,56 +41,35 @@ public class DemoApplication implements CommandLineRunner, ExitCodeGenerator {
 			return;
 		}
 
-		try (var scanner = new java.util.Scanner(System.in)) {
-			boolean authenticated = false;
-			for (int attempt = 1; attempt <= 3; attempt++) {
-				System.out.print("Username: ");
-				String username = scanner.nextLine();
-				System.out.print("Password: ");
-				String password;
-				if (System.console() != null) {
-					char[] passwordChars = System.console().readPassword();
-					password = new String(passwordChars);
-				} else {
-					password = scanner.nextLine();
-				}
-
-				midPointCommand.getMidPointClient().authenticate(username, password);
-				try {
-					if (midPointCommand.getMidPointClient().testAuthentication()) {
-						System.out.println("Login successful");
-						authenticated = true;
-						break;
-					} else {
-						System.out.println("Invalid credentials");
-					}
-				} catch (Exception e) {
-					System.out.println("Invalid credentials");
-				}
-			}
-
-			if (!authenticated) {
-				System.out.println("Too many failed attempts. Terminating.");
+		try (var scanner = new Scanner(System.in)) {
+			if (loginManager.login(scanner)) {
+				startShell(scanner, cmd);
+			} else {
 				exitCode = 1;
-				return;
-			}
-
-			while (true) {
-				System.out.print("midpoint> ");
-				if (!scanner.hasNextLine()) break;
-				String line = scanner.nextLine();
-
-				if (line == null || line.trim().equalsIgnoreCase("exit")) {
-					System.out.println("Bye!");
-					break;
-				}
-
-				if (line.trim().isEmpty()) continue;
-
-				String[] inputArgs = line.trim().split("\\s+");
-				cmd.execute(inputArgs);
 			}
 		}
+	}
+
+	private void startShell(Scanner scanner, CommandLine cmd) {
+		while (true) {
+			System.out.print(PROMPT);
+			if (!scanner.hasNextLine()) break;
+			String line = scanner.nextLine();
+
+			if (isExitCommand(line)) {
+				System.out.println("Bye!");
+				break;
+			}
+
+			if (line.trim().isEmpty()) continue;
+
+			String[] inputArgs = line.trim().split("\\s+");
+			cmd.execute(inputArgs);
+		}
+	}
+
+	private boolean isExitCommand(String line) {
+		return line == null || line.trim().equalsIgnoreCase(EXIT_COMMAND);
 	}
 
 	@Override
