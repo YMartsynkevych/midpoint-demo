@@ -1,8 +1,8 @@
 package com.midpoint.demo.cli.client;
 
+import com.midpoint.demo.api.dto.request.SearchQuery;
 import com.midpoint.demo.api.dto.response.MidpointResponse;
 import com.midpoint.demo.domain.ObjectModification;
-import com.midpoint.demo.api.dto.request.SearchQuery;
 import com.midpoint.demo.domain.User;
 import com.midpoint.demo.exception.MidPointAuthenticationException;
 import com.midpoint.demo.exception.MidPointException;
@@ -35,25 +35,14 @@ public class MidPointClient {
         this.webClientBuilder = webClientBuilder;
         this.baseUrl = baseUrl;
     }
-
-    public void authenticate(String username, String password) {
-        this.webClient = webClientBuilder
+    public boolean authenticate(String username, String password) {
+        WebClient candidateClient = webClientBuilder
                 .baseUrl(baseUrl)
                 .defaultHeaders(h -> h.setBasicAuth(username, password))
                 .build();
-    }
 
-    public void logout() {
-        logger.info("Closing MidPoint client and clearing credentials...");
-        this.webClient = null;
-    }
-
-    public boolean testAuthentication() {
-        if (this.webClient == null) {
-            return false;
-        }
         try {
-            webClient.post()
+            candidateClient.post()
                     .uri(USERS_SEARCH_ENDPOINT)
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
@@ -63,13 +52,23 @@ public class MidPointClient {
                             response -> Mono.error(new MidPointAuthenticationException("Invalid credentials")))
                     .toBodilessEntity()
                     .block();
-            return true;
+
+            this.webClient = candidateClient;
+
+            logger.info("Successfully authenticated");
+
         } catch (MidPointAuthenticationException e) {
             throw e;
         } catch (Exception e) {
-            logger.error("Authentication test failed: {}", e.getMessage());
+            logger.error("Authentication failed: {}", e.getMessage());
             throw new MidPointException("Failed to connect to MidPoint: " + e.getMessage(), e);
         }
+        return true;
+    }
+
+    public void logout() {
+        logger.info("Closing MidPoint client and clearing credentials...");
+        this.webClient = null;
     }
 
     public List<User> searchUsers(String username) {
@@ -126,10 +125,14 @@ public class MidPointClient {
             throw new MidPointException("Error updating user: " + e.getMessage(), e);
         }
     }
+    private boolean isLoggedIn() {
+        return webClient != null;
+    }
 
     private void ensureAuthenticated() {
-        if (this.webClient == null) {
-            throw new MidPointAuthenticationException("Client not authenticated. Please login first.");
+        if (!isLoggedIn()) {
+            throw new MidPointAuthenticationException("Not logged in.");
         }
     }
+
 }

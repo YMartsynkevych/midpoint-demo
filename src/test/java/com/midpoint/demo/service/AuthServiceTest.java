@@ -20,14 +20,10 @@ class AuthServiceTest {
 
     @Test
     void testAuthenticate() {
-        authService.authenticate("user", "pass");
+        when(client.authenticate("user", "pass")).thenReturn(true);
+        boolean result = authService.authenticate("user", "pass");
+        assertTrue(result);
         verify(client).authenticate("user", "pass");
-    }
-
-    @Test
-    void testTestAuthentication() {
-        when(client.testAuthentication()).thenReturn(true);
-        assertTrue(authService.testAuthentication());
     }
 
     @Test
