@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UserService {
@@ -22,7 +21,7 @@ public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final MidPointClient client;
-    private final Map<String, String> usernameToOid = new ConcurrentHashMap<>();
+    private final Map<String, String> usernameToOid = new HashMap<>();
 
     public UserService(MidPointClient client) {
         this.client = client;
