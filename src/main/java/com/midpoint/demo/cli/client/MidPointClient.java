@@ -74,7 +74,6 @@ public class MidPointClient {
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
                     .bodyValue(SearchQuery.byUsername(username))
-                    //.headers(midPointSession::apply)
                     .retrieve()
                     .onStatus(status -> status.equals(HttpStatus.UNAUTHORIZED),
                             res -> Mono.error(new MidPointException("Unauthorized access")))
@@ -85,7 +84,7 @@ public class MidPointClient {
                 return List.of();
             }
             return response.getObject().getObject();
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new MidPointException("Error during user search: " + e.getMessage(), e);
         }
     }
@@ -102,7 +101,6 @@ public class MidPointClient {
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
                     .bodyValue(body)
-                    //.headers(midPointSession::apply)
                     .retrieve()
                     .onStatus(status -> status.equals(HttpStatus.UNAUTHORIZED),
                             res -> Mono.error(new MidPointException("Unauthorized access")))
