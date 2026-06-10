@@ -3,7 +3,6 @@ package com.midpoint.demo.cli.client.commands;
 import com.midpoint.demo.domain.User;
 import com.midpoint.demo.service.UserService;
 import org.springframework.stereotype.Component;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 

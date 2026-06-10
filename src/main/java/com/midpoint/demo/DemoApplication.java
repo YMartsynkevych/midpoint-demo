@@ -78,7 +78,6 @@ public class DemoApplication implements CommandLineRunner, ExitCodeGenerator {
 		loginManager.logout();
 
 		HttpResources.disposeLoopsAndConnections();
-
 		System.out.println("Bye!");
 		System.exit(0);
 

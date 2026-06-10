@@ -24,8 +24,9 @@ docker --version
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
-cd <repo-folder>
+mkdir midpoint
+cd midpoint
+git clone https://github.com/YMartsynkevych/midpoint-demo
 ```
 
 ### 2. Make the script executable
@@ -33,23 +34,6 @@ cd <repo-folder>
 ```bash
 chmod +x midpoint-demo.sh
 ```
-
-### 3. (Optional) Install globally
-
-To run the CLI from anywhere in your system:
-
-```bash
-mv midpoint-demo.sh /usr/local/bin/midpoint-demo
-chmod +x /usr/local/bin/midpoint-demo
-```
-
-After this, you can use:
-
-```bash
-midpoint-demo start
-```
-
----
 
 ## ▶️ Running the Application
 
@@ -132,7 +116,7 @@ Search is currently supported by **username only**.
 ✅ Example:
 
 ```bash
-midpoint>search --username borgia
+midpoint>search  borgia
 ```
 
 Expected behavior:
