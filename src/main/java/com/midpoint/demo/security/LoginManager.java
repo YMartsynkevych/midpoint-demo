@@ -1,8 +1,7 @@
 package com.midpoint.demo.security;
 
-import com.midpoint.demo.exception.MidPointAuthenticationException;
+import com.midpoint.demo.cli.client.MidPointClient;
 import com.midpoint.demo.exception.MidPointException;
-import com.midpoint.demo.service.AuthService;
 import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
@@ -12,10 +11,10 @@ public class LoginManager {
 
     private static final int MAX_LOGIN_ATTEMPTS = 3;
 
-    private final AuthService authService;
+    private final MidPointClient midPointClient;
 
-    public LoginManager(AuthService authService) {
-        this.authService = authService;
+    public LoginManager(MidPointClient midPointClient) {
+        this.midPointClient = midPointClient;
     }
 
     public boolean login(Scanner scanner) {
@@ -26,7 +25,6 @@ public class LoginManager {
                 System.out.println("Login successful");
                 return true;
             }
-
             if (attempt < MAX_LOGIN_ATTEMPTS) {
                 System.out.println("Retry " + attempt + "/" + MAX_LOGIN_ATTEMPTS);
             }
@@ -51,13 +49,11 @@ public class LoginManager {
 
     private boolean authenticate(Credentials credentials) {
         try {
-            if (authService.authenticate(credentials.username(), credentials.password())) {
+            if (midPointClient.authenticate(credentials.username(), credentials.password())) {
                 return true;
             }
             System.out.println("Invalid credentials");
-        } catch (MidPointAuthenticationException e) {
-            System.out.println("Invalid credentials");
-        } catch (MidPointException e) {
+        }  catch (MidPointException e) {
             System.out.println("Authentication error: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Unexpected error: " + e.getMessage());
@@ -67,7 +63,7 @@ public class LoginManager {
 
     public void logout() {
         System.out.println("Logging out...");
-        authService.logout();
+        midPointClient.logout();
     }
 
     public record Credentials(String username, String password) {}

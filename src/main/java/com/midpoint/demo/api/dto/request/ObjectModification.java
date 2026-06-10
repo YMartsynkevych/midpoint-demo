@@ -1,4 +1,4 @@
-package com.midpoint.demo.domain;
+package com.midpoint.demo.api.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
